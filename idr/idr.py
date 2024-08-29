@@ -48,11 +48,11 @@ def load_bed(fp, signal_index, peak_summit_index=None):
         signal = float(data[signal_index])
         if idr.ONLY_ALLOW_NON_NEGATIVE_VALUES and signal < 0:
             raise ValueError("Invalid Signal Value: {:e}".format(signal))
-        if peak_summit_index == None or int(data[peak_summit_index]) == -1:
+        if peak_summit_index is None or int(data[peak_summit_index]) == -1:
             summit = None
         else:
             summit = int(data[peak_summit_index]) + int(float(data[1]))
-        assert summit == None or summit >= 0
+        assert summit is None or summit >= 0
         peak = Peak(data[0], data[5], 
                     int(float(data[1])), int(float(data[2])), 
                     signal, summit, 
@@ -123,10 +123,10 @@ def iter_merge_grpd_intervals(
         # if there are more peaks, take the summit that corresponds to the 
         # replicate peak with the highest signal value
         for pk in pks[1:]:
-            if pk.summit != None and pk.signal > summit_signal:
+            if pk.summit is not None and pk.signal > summit_signal:
                 replicate_summit, summit_signal = pk.summit, pk.signal
         # make sure a peak summit was specified
-        if replicate_summit != None:
+        if replicate_summit is not None:
             replicate_summits.append( replicate_summit )
 
     summit = ( int(mean(replicate_summits)) 
@@ -161,7 +161,7 @@ def iter_matched_oracle_pks(
             # calculate the distance between summits, setting it to a large
             # value in case the peaks don't have summits
             summit_distance = sys.maxsize
-            if oracle_pk.summit != None and pk.summit != None:
+            if oracle_pk.summit is not None and pk.summit is not None:
                 summit_distance = abs(oracle_pk.summit - pk.summit)
             # calculate the fraction overlap with the oracle peak
             overlap = (1 + min(oracle_pk.stop, pk.stop) 
@@ -207,7 +207,7 @@ def merge_peaks_in_contig(all_s_peaks, pk_agg_fn, oracle_pks=None,
     """
     # merge and sort all peaks, keeping track of which sample they originated in
     oracle_pks_iter = []
-    if oracle_pks != None: 
+    if oracle_pks is not None:
         oracle_pks_iter = oracle_pks
     
     # merge and sort all the intervals, keeping track of their source
@@ -231,11 +231,11 @@ def merge_peaks_in_contig(all_s_peaks, pk_agg_fn, oracle_pks=None,
     # build the unified peak list, setting the score to 
     # zero if it doesn't exist in both replicates
     merged_pks = []
-    if oracle_pks == None:
+    if oracle_pks is None:
         for intervals in grpd_intervals:
             for merged_pk in iter_merge_grpd_intervals(
                     intervals, len(all_s_peaks), pk_agg_fn,
-                    use_oracle_pks=(oracle_pks != None),
+                    use_oracle_pks=(oracle_pks is not None),
                     use_nonoverlapping_peaks = use_nonoverlapping_peaks):
                 merged_pks.append(merged_pk)
     else:        
@@ -254,7 +254,7 @@ def merge_peaks(all_s_peaks, pk_agg_fn, oracle_pks=None,
     """
     # if we have reference peaks, use its contigs: otherwise use
     # the union of the replicates contigs
-    if oracle_pks != None:
+    if oracle_pks is not None:
         contigs = sorted(oracle_pks.keys())
     else:
         contigs = sorted(set(chain(*[list(s_peaks.keys()) for s_peaks in all_s_peaks])))
@@ -264,7 +264,7 @@ def merge_peaks(all_s_peaks, pk_agg_fn, oracle_pks=None,
         # check to see if we've been provided a peak list and, if so, 
         # pass it down. If not, set the oracle peaks to None so that 
         # the callee knows not to use them
-        if oracle_pks != None: contig_oracle_pks = oracle_pks[key]
+        if oracle_pks is not None: contig_oracle_pks = oracle_pks[key]
         else: contig_oracle_pks = None
         
         # since s*_peaks are default dicts, it will never raise a key error, 
@@ -320,7 +320,7 @@ def build_idr_output_line_with_bed6(
         rv.extend(signal_values)
         # if this is a narrow peak, we also need to add the summit
         if output_file_type == 'narrowPeak':
-            rv.append(str(-1 if m_pk.summit == None
+            rv.append(str(-1 if m_pk.summit is None
                           else m_pk.summit - m_pk.start))
     else:
         raise ValueError("Unrecognized output format '{}'".format(outputFormat))
@@ -472,7 +472,7 @@ def write_results_to_file(merged_peaks, output_file,
     for localIDR, IDR, merged_peak in zip(
             localIDRs, IDRs, merged_peaks):
         # skip peaks with global idr values below the threshold
-        if max_allowed_idr != None and IDR > max_allowed_idr: 
+        if max_allowed_idr is not None and IDR > max_allowed_idr:
             continue
         num_peaks_passing_hard_thresh += 1
         if IDR <= soft_max_allowed_idr:
@@ -644,14 +644,14 @@ Contact: Nathan Boley <npboley@gmail.com>
         idr.ONLY_ALLOW_NON_NEGATIVE_VALUES = False
         
     assert idr.DEFAULT_IDR_THRESH == 1.0
-    if args.idr_threshold == None and args.soft_idr_threshold == None:
+    if args.idr_threshold is None and args.soft_idr_threshold is None:
         args.idr_threshold = idr.DEFAULT_IDR_THRESH
         args.soft_idr_threshold = idr.DEFAULT_SOFT_IDR_THRESH
-    elif args.soft_idr_threshold == None:
-        assert args.idr_threshold != None
+    elif args.soft_idr_threshold is None:
+        assert args.idr_threshold is not None
         args.soft_idr_threshold = args.idr_threshold
-    elif args.idr_threshold == None:
-        assert args.soft_idr_threshold != None
+    elif args.idr_threshold is None:
+        assert args.soft_idr_threshold is not None
         args.idr_threshold = idr.DEFAULT_IDR_THRESH
 
     numpy.random.seed(args.random_seed)
@@ -671,7 +671,7 @@ def load_samples(args):
     # decide what aggregation function to use for peaks that need to be merged
     idr.log("Loading the peak files", 'VERBOSE')
     if args.input_file_type in ['narrowPeak', 'broadPeak']:
-        if args.rank == None: signal_type = 'signal.value'
+        if args.rank is None: signal_type = 'signal.value'
         else: signal_type = args.rank
 
         try: 
@@ -682,7 +682,7 @@ def load_samples(args):
                 "Unrecognized signal type for {} filetype: '{}'".format(
                     args.input_file_type, signal_type))
 
-        if args.peak_merge_method != None:
+        if args.peak_merge_method is not None:
             peak_merge_fn = {
                 "sum": sum, "avg": mean, "min": min, "max": max}[
                     args.peak_merge_method]
@@ -698,10 +698,10 @@ def load_samples(args):
                   for fp in args.samples]
         oracle_pks =  (
             load_bed(args.peak_list, signal_index, summit_index) 
-            if args.peak_list != None else None)
+            if args.peak_list is not None else None)
     elif args.input_file_type in ['bed', ]:
         # set the default
-        if args.rank == None: 
+        if args.rank is None:
             signal_type = 'score'
 
         if args.rank == 'score':
@@ -716,7 +716,7 @@ def load_samples(args):
                                  +"be set to score or an index specifying "\
                                  +"the column to use.")
         
-        if args.peak_merge_method == None:
+        if args.peak_merge_method is None:
             peak_merge_fn = sum
         else:
             peak_merge_fn = {
@@ -726,15 +726,15 @@ def load_samples(args):
         f1, f2 = [load_bed(fp, signal_index) for fp in args.samples]
         oracle_pks =  (
             load_bed(args.peak_list, signal_index) 
-            if args.peak_list != None else None)
+            if args.peak_list is not None else None)
     elif args.input_file_type in ['gff', ]:
         # set the default
-        if args.rank == None: 
+        if args.rank is None:
             signal_type = 'score'
         else:
             assert args.rank == 'score'
         
-        if args.peak_merge_method == None:
+        if args.peak_merge_method is None:
             peak_merge_fn = sum
         else:
             peak_merge_fn = {
@@ -744,7 +744,7 @@ def load_samples(args):
         f1, f2 = [load_gff(fp) for fp in args.samples]
         oracle_pks =  (
             load_gff(args.peak_list) 
-            if args.peak_list != None else None)
+            if args.peak_list is not None else None)
     else:
         raise ValueError( "Unrecognized file type: '{}'".format(
             args.input_file_type))
