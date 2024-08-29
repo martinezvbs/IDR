@@ -55,14 +55,13 @@ def load_bed(fp, signal_index, peak_summit_index=None):
         else:
             summit = int(data[peak_summit_index]) + int(float(data[1]))
         assert summit is None or summit >= 0
-        peak = Peak(data[0], data[5], 
-                    int(float(data[1])), int(float(data[2])), 
-                    signal, summit, 
-                    float(data[6]), float(data[7]), float(data[8]) 
+        peak = Peak(data[0], data[5],
+                    int(float(data[1])), int(float(data[2])),
+                    signal, summit,
+                    float(data[6]), float(data[7]), float(data[8])
         )
-        grpd_peaks[(peak.chrm, peak.strand)].append(peak)
+        grpd_peaks[(peak.chr, peak.strand)].append(peak)
     return grpd_peaks
-
 def correct_multi_summit_peak_IDR_values(idr_values, merged_peaks):
     assert len(idr_values) == len(merged_peaks)
     new_values = idr_values.copy()
