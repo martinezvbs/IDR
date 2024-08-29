@@ -7,7 +7,7 @@ import argparse
 import numpy as np
 import matplotlib
 from scipy.stats import rankdata
-from collections import defaultdict, namedtuple
+from collections import defaultdict, namedtuple, OrderedDict
 from statistics import mean
 
 # Use Agg backend for matplotlib
@@ -38,9 +38,6 @@ def mean(items):
 
 
 def load_gff(fp):
-    """
-    chr20   GRIT    TSS     36322438        36322468        44      +       .       gene_id 'chr20_plus_36322407_36500530'; gene_name 'chr20_plus_36322407_36500530'; tss_id 'TSS_chr20_plus_36322407_36500530_pk1'; peak_cov '7,0,11,0,0,0,0,0,3,0,1,0,0,0,6,0,0,0,0,0,3,0,4,0,0,0,8,0,0,1';
-    """
     grpd_peaks = defaultdict(list)
     for line in fp:
         if line.startswith("#"): continue
