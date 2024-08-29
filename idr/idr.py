@@ -66,16 +66,16 @@ def correct_multi_summit_peak_IDR_values(idr_values, merged_peaks):
     assert len(idr_values) == len(merged_peaks)
     new_values = idr_values.copy()
     # find the maximum IDR value for each peak
-    pk_idr_values = defaultdict(lambda: float('inf')) 
+    pk_idr_values = defaultdict(lambda: float('inf'))
     for i, pk in enumerate(merged_peaks):
-        pk_idr_values[(pk.chrm, pk.strand, pk.start, pk.stop)] = min(
-            pk_idr_values[(pk.chrm, pk.strand, pk.start, pk.stop)], 
+        pk_idr_values[(pk.chr, pk.strand, pk.start, pk.stop)] = min(
+            pk_idr_values[(pk.chr, pk.strand, pk.start, pk.stop)],
             idr_values[i]
         )
     # store the indices best peak indices, and update the values
     best_indices = []
     for i, pk in enumerate(merged_peaks):
-        region = (pk.chrm, pk.strand, pk.start, pk.stop)
+        region = (pk.chr, pk.strand, pk.start, pk.stop)
         if new_values[i] == pk_idr_values[region]:
             best_indices.append(i)
         else:
