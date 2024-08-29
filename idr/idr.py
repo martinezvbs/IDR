@@ -1,8 +1,10 @@
-import os, sys
-import gzip, io
+import os
+import sys
+import gzip
+import io
 import math
-import numpy
-from scipy.stats.stats import rankdata
+import numpy as np
+from scipy.stats import rankdata
 from collections import namedtuple, defaultdict, OrderedDict
 from itertools import chain
 
