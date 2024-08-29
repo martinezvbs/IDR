@@ -1,13 +1,8 @@
 import os, sys
-
 import gzip, io
-
 import math
-
 import numpy
-
 from scipy.stats.stats import rankdata
-
 from collections import namedtuple, defaultdict, OrderedDict
 from itertools import chain
 
@@ -22,9 +17,9 @@ from idr.optimization import estimate_model_params, old_estimator
 from idr.utility import calc_post_membership_prbs, compute_pseudo_values
 
 Peak = namedtuple(
-    'Peak', ['chrm', 'strand', 'start', 'stop', 'signal', 'summit', 'signalValue', 'pValue', 'qValue'])
+    'Peak', ['chr', 'strand', 'start', 'stop', 'signal', 'summit', 'signalValue', 'pValue', 'qValue'])
 MergedPeak = namedtuple(
-    'Peak', ['chrm', 'strand', 'start', 'stop', 'summit', 
+    'Peak', ['chr', 'strand', 'start', 'stop', 'summit',
              'merged_signal', 'signals', 'pks'])
 
 def load_gff(fp):
@@ -108,7 +103,7 @@ def iter_merge_grpd_intervals(
     if pk_stop == -1:
         return None
 
-    # skip regions that dont have a peak in all replicates
+    # skip regions that don't have a peak in all replicates
     if not use_nonoverlapping_peaks:
         if any(0 == len(peaks) for peaks in grpd_peaks.values()):
             return None
@@ -164,11 +159,11 @@ def iter_matched_oracle_pks(
             if sample_id == 0: continue
             
             # calculate the distance between summits, setting it to a large
-            # value in case the peaks dont have summits
+            # value in case the peaks don't have summits
             summit_distance = sys.maxsize
             if oracle_pk.summit != None and pk.summit != None:
                 summit_distance = abs(oracle_pk.summit - pk.summit)
-            # calculate the fraction overlap witht he oracle peak
+            # calculate the fraction overlap with the oracle peak
             overlap = (1 + min(oracle_pk.stop, pk.stop) 
                        - max(oracle_pk.start, pk.start) ) 
             overlap_frac = overlap/(oracle_pk.stop - oracle_pk.start + 1)
@@ -176,13 +171,13 @@ def iter_matched_oracle_pks(
             peaks_and_scores[sample_id].append(
                 ((summit_distance, -overlap_frac, -pk.signal), pk))
                 
-        # skip regions that dont have a peak in all replicates. 
+        # skip regions that don't have a peak in all replicates.
         if not use_nonoverlapping_peaks and any(
                 0 == len(peaks) for peaks in peaks_and_scores.values()):
             continue
         
-        # build the aggregated signal value, which is jsut the signal value
-        # of the replicate peak witgh the closest match
+        # build the aggregated signal value, which is just the signal value
+        # of the replicate peak with the closest match
         signals = []
         rep_pks = []
         for rep_id, scored_pks in peaks_and_scores.items():
@@ -215,7 +210,7 @@ def merge_peaks_in_contig(all_s_peaks, pk_agg_fn, oracle_pks=None,
     if oracle_pks != None: 
         oracle_pks_iter = oracle_pks
     
-    # merge and sort all of the intervals, leeping track of their source
+    # merge and sort all the intervals, keeping track of their source
     all_intervals = []
     for sample_id, peaks in enumerate([oracle_pks_iter,] + all_s_peaks):
         all_intervals.extend((pk,sample_id) for pk in peaks)
@@ -299,11 +294,11 @@ def build_rank_vectors(merged_peaks):
              numpy.array(rank2, dtype=numpy.int) )
 
 def build_idr_output_line_with_bed6(
-        m_pk, IDR, localIDR, output_file_type, signal_type, 
-        use_oracle_peak_values=True):
-    # initialize the line with the bed6 entires - these are 
+        m_pk, IDR, localIDR, output_file_type, signal_type,
+        use_oracle_peak_values=True, outputFormat=None):
+    # initialize the line with the bed6 entires - these are
     # present in all of the output types
-    rv = [m_pk.chrm, str(m_pk.start), str(m_pk.stop), 
+    rv = [m_pk.chrm, str(m_pk.start), str(m_pk.stop),
           ".", "%i" % (min(1000, int(-125*math.log2(IDR+1e-12)))), m_pk.strand]
     if output_file_type == 'bed':
         # if we just want a bed, there's nothing else to be done
@@ -317,7 +312,7 @@ def build_idr_output_line_with_bed6(
                 m_pk.pks[0].signalValue, m_pk.pks[0].pValue, m_pk.pks[0].qValue]
             signal_values = ["%.5f" % x for x in signal_values]
         else:
-            # set the signal values that we didn't use to -1 per the standard 
+            # set the signal values that we didn't use to -1 per the standard
             signal_values = ["-1", "-1", "-1"]
             signal_values[
                 {"signal.value": 0, "p.value": 1, "q.value": 2}[signal_type]
@@ -325,12 +320,12 @@ def build_idr_output_line_with_bed6(
         rv.extend(signal_values)
         # if this is a narrow peak, we also need to add the summit
         if output_file_type == 'narrowPeak':
-            rv.append(str(-1 if m_pk.summit == None 
+            rv.append(str(-1 if m_pk.summit == None
                           else m_pk.summit - m_pk.start))
     else:
         raise ValueError("Unrecognized output format '{}'".format(outputFormat))
 
-    rv.append("%f" % -math.log10(max(1e-5, localIDR)))    
+    rv.append("%f" % -math.log10(max(1e-5, localIDR)))
     rv.append("%f" % -math.log10(max(1e-5, IDR)))
 
     for key, signal in enumerate(m_pk.signals):
@@ -351,8 +346,8 @@ def build_idr_output_line_with_bed6(
                 rv.append( "%i" % int(
                     mean(x.summit-x.start for x in m_pk.pks[key])
                 ))
-                                       
-            
+
+
     return "\t".join(rv)
 
 def build_backwards_compatible_idr_output_line(
@@ -410,8 +405,8 @@ def fit_model_and_calc_local_idr(r1, r2,
                                  max_iter=idr.MAX_ITER_DEFAULT, 
                                  convergence_eps=idr.CONVERGENCE_EPS_DEFAULT, 
                                  fix_mu=False, fix_sigma=False):
-    # in theory we would try to find good starting point here,
-    # but for now just set it to somethign reasonable
+    # in theory, we would try to find good starting point here,
+    # but for now just set it to something reasonable
     if starting_point is None:
         starting_point = (idr.DEFAULT_MU, idr.DEFAULT_SIGMA,
                           idr.DEFAULT_RHO, idr.DEFAULT_MIX_PARAM)
