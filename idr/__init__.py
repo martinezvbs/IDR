@@ -6,21 +6,23 @@ DEBUG_LEVELS = {'ERROR', 'WARNING', None, 'VERBOSE', 'DEBUG'}
 ERROR_LEVELS = {'ERROR', 'WARNING'}
 
 log_ofp = sys.stderr
+
 def log(*args, level=None):
     assert level in DEBUG_LEVELS
     args = [str(x) for x in args]
-    if args[-1] in DEBUG_LEVELS: 
-        if level == None:
+    if args[-1] in DEBUG_LEVELS:
+        if level is None:
             level = args[-1]
         args = args[:-1]
     if level in ERROR_LEVELS:
         print(" ".join(args), file=sys.stderr)
         sys.stderr.flush()
-        if log_ofp == sys.stderr: return
-    elif QUIET: 
+        if log_ofp == sys.stderr:
+            return
+    elif QUIET:
         return
-    
-    if (level in ('ERROR', 'WARNING', None) 
+
+    if (level in ('ERROR', 'WARNING', None)
             or (level == 'VERBOSE' and VERBOSE)):
         print(" ".join(args), file=log_ofp)
         log_ofp.flush()
