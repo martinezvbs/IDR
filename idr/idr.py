@@ -21,8 +21,8 @@ from idr.utility import calc_post_membership_prbs, compute_pseudo_values
 Peak = namedtuple(
     'Peak', ['chr', 'strand', 'start', 'stop', 'signal', 'summit', 'signalValue', 'pValue', 'qValue'])
 MergedPeak = namedtuple(
-    'Peak', ['chr', 'strand', 'start', 'stop', 'summit',
-             'merged_signal', 'signals', 'pks'])
+    'MergedPeak', ['chr', 'strand', 'start', 'stop', 'summit',
+                   'merged_signal', 'signals', 'pks'])
 
 def load_gff(fp):
     """
